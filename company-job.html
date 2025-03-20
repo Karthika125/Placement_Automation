@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Job Listings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Post a Job - Blockchain Placement Portal</h1>
+        <nav>
+            <ul>
+                <li><a href="company-dashboard.html">Dashboard</a></li>
+                <li><a href="company-jobs.html">Post Job</a></li>
+                <li><a href="landing.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Post a New Job</h2>
+            <form id="jobForm">
+                <label for="jobTitle">Job Title:</label>
+                <input type="text" id="jobTitle" required>
+
+                <label for="companyName">Company Name:</label>
+                <input type="text" id="companyName" required>
+
+                <label for="jobDescription">Job Description:</label>
+                <textarea id="jobDescription" rows="4" required></textarea>
+
+                <label for="skillsRequired">Skills Required:</label>
+                <input type="text" id="skillsRequired" placeholder="e.g., Python, React, Solidity" required>
+
+                <label for="jobLocation">Location:</label>
+                <input type="text" id="jobLocation" required>
+
+                <label for="salary">Salary Range:</label>
+                <input type="text" id="salary" required>
+
+                <button type="submit">Post Job</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Job Listings</h2>
+            <div id="jobListings"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blockchain Placement Portal</p>
+    </footer>
+
+    <script>
+        document.getElementById("jobForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let jobTitle = document.getElementById("jobTitle").value;
+            let companyName = document.getElementById("companyName").value;
+            let jobDescription = document.getElementById("jobDescription").value;
+            let skillsRequired = document.getElementById("skillsRequired").value;
+            let jobLocation = document.getElementById("jobLocation").value;
+            let salary = document.getElementById("salary").value;
+
+            let jobHTML = `
+                <div class="job-card">
+                    <h3>${jobTitle}</h3>
+                    <p><strong>Company:</strong> ${companyName}</p>
+                    <p><strong>Description:</strong> ${jobDescription}</p>
+                    <p><strong>Skills:</strong> ${skillsRequired}</p>
+                    <p><strong>Location:</strong> ${jobLocation}</p>
+                    <p><strong>Salary:</strong> ${salary}</p>
+                </div>
+            `;
+
+            document.getElementById("jobListings").innerHTML += jobHTML;
+
+            // Clear form fields
+            document.getElementById("jobForm").reset();
+        });
+    </script>
+
+</body>
+</html>

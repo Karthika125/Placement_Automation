@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Dashboard - Blockchain Placement Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Company Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="landing.html">Home</a></li>
+                <li><a href="company-dashboard.html">Dashboard</a></li>
+                <li><a href="logout.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="upload-section">
+            <h2>Upload Job Requirements</h2>
+            <form action="upload-job.php" method="POST">
+                <label for="job-title">Job Title:</label>
+                <input type="text" id="job-title" name="job-title" required>
+
+                <label for="job-description">Job Description:</label>
+                <textarea id="job-description" name="job-description" required></textarea>
+
+                <label for="skills">Required Skills:</label>
+                <input type="text" id="skills" name="skills" placeholder="E.g., Python, React, Blockchain" required>
+
+                <button type="submit" class="btn">Post Job</button>
+            </form>
+        </section>
+
+        <section class="students-section">
+            <h2>Matching Candidates</h2>
+            <div class="student-slider">
+                <div class="student-card">Student A - Blockchain Developer</div>
+                <div class="student-card">Student B - AI Engineer</div>
+                <div class="student-card">Student C - Web Developer</div>
+                <div class="student-card">Student D - Data Scientist</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blockchain Placement Portal</p>
+    </footer>
+
+    <script>
+        // Auto-scrolling student slider
+        document.addEventListener("DOMContentLoaded", function() {
+            const slider = document.querySelector(".student-slider");
+            let scrollAmount = 0;
+            setInterval(() => {
+                scrollAmount += 200;
+                if (scrollAmount >= slider.scrollWidth - slider.clientWidth) {
+                    scrollAmount = 0;
+                }
+                slider.scrollTo({ left: scrollAmount, behavior: "smooth" });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

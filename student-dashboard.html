@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Blockchain Placement Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Student Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="landing.html">Home</a></li>
+                <li><a href="student-dashboard.html">Dashboard</a></li>
+                <li><a href="logout.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="upload-section">
+            <h2>Upload Your Resume</h2>
+            <form action="upload.php" method="POST" enctype="multipart/form-data">
+                <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
+                <button type="submit" class="btn">Upload</button>
+            </form>
+        </section>
+
+        <section class="companies-section">
+            <h2>Browse Companies</h2>
+            <div class="company-slider">
+                <div class="company-card">Company A</div>
+                <div class="company-card">Company B</div>
+                <div class="company-card">Company C</div>
+                <div class="company-card">Company D</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blockchain Placement Portal</p>
+    </footer>
+
+    <script>
+        // Simple slider functionality
+        document.addEventListener("DOMContentLoaded", function() {
+            const slider = document.querySelector(".company-slider");
+            let scrollAmount = 0;
+            setInterval(() => {
+                scrollAmount += 200;
+                if (scrollAmount >= slider.scrollWidth - slider.clientWidth) {
+                    scrollAmount = 0;
+                }
+                slider.scrollTo({ left: scrollAmount, behavior: "smooth" });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
