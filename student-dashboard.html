@@ -3,38 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - Blockchain Placement Portal</title>
+    <title>Student Dashboard - Placement Portal</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-    <script src="https://unpkg.com/ipfs-http-client/dist/index.min.js"></script>
+    <!-- Updated IPFS and Web3 imports -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ipfs-http-client@56.0.1/dist/index.min.js"></script>
 </head>
 <body>
     <header>
-        <h1>Student Dashboard</h1>
-        <nav>
-            <ul>
-                <li><a href="landing.html">Home</a></li>
-                <li><a href="student-dashboard.html">Dashboard</a></li>
-                <li><a href="logout.html">Logout</a></li>
-            </ul>
-        </nav>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="landing.html">Home</a></li>
+                    <li><a href="student-dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="logout.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <section class="upload-section">
-            <h2>Upload Your Resume to IPFS</h2>
-            <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" required>
-            <button class="btn" onclick="uploadToIPFS()">Upload</button>
-            <p id="uploadStatus"></p>
+    <main class="container">
+        <section class="welcome-section">
+            <h1>Welcome to Your Dashboard</h1>
+            <p>Find opportunities and manage your profile.</p>
         </section>
 
-        <section class="companies-section">
-            <h2>Browse Companies</h2>
-            <div class="company-slider">
-                <div class="company-card">Company A</div>
-                <div class="company-card">Company B</div>
-                <div class="company-card">Company C</div>
-                <div class="company-card">Company D</div>
+        <section class="resume-section">
+            <h2>Upload Your Resume</h2>
+            <div class="upload-container">
+                <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" required>
+                <button class="btn primary" onclick="uploadToIPFS()">Upload to IPFS</button>
+                <div id="uploadStatus" class="status-message" style="display: none;"></div>
+            </div>
+        </section>
+
+        <section class="job-section">
+            <h2>Latest Job Opportunities</h2>
+            <div class="job-filters">
+                <input type="text" id="jobSearch" placeholder="Search job titles..." class="search-input" value="software engineer">
+                <input type="text" id="locationSearch" placeholder="Location..." class="search-input" value="kochi">
+                <button onclick="searchJobs()" class="btn primary">Search</button>
+            </div>
+            
+            <!-- Status message container -->
+            <div id="statusMessage" class="status-message" style="display: none;"></div>
+            
+            <!-- Job listings container -->
+            <div class="job-listings" id="jobListings">
+                <!-- Loading spinner -->
+                <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
             </div>
         </section>
     </main>
@@ -44,55 +63,234 @@
     </footer>
 
     <script>
-        const ipfs = window.IpfsHttpClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
+        // Debug flag
+        const DEBUG = true;
 
+        function log(message, data = null) {
+            if (DEBUG) {
+                if (data) {
+                    console.log(`[Debug] ${message}:`, data);
+                } else {
+                    console.log(`[Debug] ${message}`);
+                }
+            }
+        }
+
+        // Initialize IPFS client
+        let ipfs;
+        try {
+            ipfs = window.IpfsHttpClient.create({
+                host: 'ipfs.infura.io',
+                port: 5001,
+                protocol: 'https'
+            });
+            log('IPFS client initialized');
+        } catch (error) {
+            console.error('Error initializing IPFS client:', error);
+        }
+
+        // Resume upload function
         async function uploadToIPFS() {
-            const fileInput = document.getElementById("resumeUpload");
+            log('Starting file upload');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const fileInput = document.getElementById('resumeUpload');
+
             if (!fileInput.files.length) {
-                alert("Please select a file!");
+                showUploadStatus('Please select a file!', 'error');
                 return;
             }
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.readAsArrayBuffer(file);
-            reader.onloadend = async () => {
-                try {
-                    const result = await ipfs.add(reader.result);
-                    const ipfsHash = result.path;
-                    document.getElementById("uploadStatus").innerHTML = `Uploaded: <a href="https://ipfs.io/ipfs/${ipfsHash}" target="_blank">${ipfsHash}</a>`;
-                    saveToBlockchain(ipfsHash);
-                } catch (error) {
-                    console.error("IPFS Upload Error:", error);
-                }
-            };
-        }
+            if (!ipfs) {
+                showUploadStatus('IPFS client not initialized. Please try again later.', 'error');
+                return;
+            }
 
-        async function saveToBlockchain(ipfsHash) {
-            if (typeof window.ethereum !== "undefined") {
-                try {
-                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-                    console.log("Connected Wallet:", accounts[0]);
-                    alert("Resume uploaded and saved to Blockchain!");
-                } catch (error) {
-                    console.error("Blockchain Error:", error);
-                }
-            } else {
-                alert("MetaMask not detected! Install it to connect.");
+            try {
+                showUploadStatus('Uploading to IPFS...', 'info');
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onloadend = async () => {
+                    try {
+                        const buffer = Buffer.from(reader.result);
+                        const result = await ipfs.add(buffer);
+                        const ipfsHash = result.path;
+                        showUploadStatus(
+                            `Upload successful! IPFS Hash: <a href="https://ipfs.io/ipfs/${ipfsHash}" target="_blank">${ipfsHash}</a>`,
+                            'success'
+                        );
+                        await saveToBlockchain(ipfsHash);
+                    } catch (error) {
+                        console.error('IPFS Upload Error:', error);
+                        showUploadStatus('Failed to upload to IPFS. Please try again.', 'error');
+                    }
+                };
+
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                console.error('Upload Error:', error);
+                showUploadStatus('An error occurred during upload.', 'error');
             }
         }
 
-        // Slider animation
-        document.addEventListener("DOMContentLoaded", function() {
-            const slider = document.querySelector(".company-slider");
-            let scrollAmount = 0;
-            setInterval(() => {
-                scrollAmount += 200;
-                if (scrollAmount >= slider.scrollWidth - slider.clientWidth) {
-                    scrollAmount = 0;
+        function showUploadStatus(message, type) {
+            const uploadStatus = document.getElementById('uploadStatus');
+            uploadStatus.innerHTML = message;
+            uploadStatus.className = `status-message ${type}`;
+            uploadStatus.style.display = 'block';
+        }
+
+        async function saveToBlockchain(ipfsHash) {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    showUploadStatus('Resume uploaded and saved to Blockchain!', 'success');
+                } catch (error) {
+                    console.error('Blockchain Error:', error);
+                    showUploadStatus('Failed to save to blockchain. Please try again.', 'error');
                 }
-                slider.scrollTo({ left: scrollAmount, behavior: "smooth" });
-            }, 2000);
+            } else {
+                showUploadStatus('MetaMask not detected! Please install it to connect.', 'error');
+            }
+        }
+
+        // Job Search Functions
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM Content Loaded');
+            
+            // Initialize elements
+            const jobSearch = document.getElementById('jobSearch');
+            const locationSearch = document.getElementById('locationSearch');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const jobListings = document.getElementById('jobListings');
+            const statusMessage = document.getElementById('statusMessage');
+
+            // Add click event listener to search button
+            const searchButton = document.querySelector('button[onclick="searchJobs()"]');
+            if (searchButton) {
+                searchButton.addEventListener('click', function(e) {
+                    log('Search button clicked');
+                    e.preventDefault();
+                    window.searchJobs();
+                });
+            }
+
+            // Job Search Functions
+            window.searchJobs = async function() {
+                log('Starting job search');
+                try {
+                    // Show loading state
+                    if (loadingSpinner) {
+                        log('Showing loading spinner');
+                        loadingSpinner.style.display = 'block';
+                    }
+                    if (statusMessage) statusMessage.style.display = 'none';
+                    if (jobListings) jobListings.innerHTML = '';
+
+                    // Get search values
+                    const searchQuery = jobSearch ? jobSearch.value : 'software engineer';
+                    const searchLocation = locationSearch ? locationSearch.value : 'kochi';
+                    log('Search parameters', { searchQuery, searchLocation });
+
+                    // First test if the API is accessible
+                    log('Testing API connection');
+                    const testUrl = 'http://localhost:5000/api/test';
+                    log('Testing API at:', testUrl);
+                    
+                    const testResponse = await fetch(testUrl);
+                    const testData = await testResponse.json();
+                    log('API test response:', testData);
+
+                    if (!testResponse.ok) {
+                        throw new Error('API server is not responding');
+                    }
+
+                    // If API is working, proceed with job search
+                    log('Fetching jobs');
+                    const jobsUrl = `http://localhost:5000/api/jobs/${encodeURIComponent(searchQuery)}/${encodeURIComponent(searchLocation)}`;
+                    log('Fetching jobs from:', jobsUrl);
+                    
+                    const response = await fetch(jobsUrl);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch jobs');
+                    }
+
+                    const jobs = await response.json();
+                    log('Jobs received', jobs);
+                    displayJobs(jobs);
+                } catch (error) {
+                    console.error('Error:', error);
+                    log('Error occurred during search', error);
+                    if (statusMessage) {
+                        statusMessage.innerHTML = `
+                            <div class="error-message">
+                                ${error.message || 'Error loading jobs. Please try again later.'}
+                                <br>
+                                <small>Make sure the Python backend server is running (python linkedin_scraper.py)</small>
+                            </div>`;
+                        statusMessage.style.display = 'block';
+                    }
+                    if (jobListings) jobListings.innerHTML = '';
+                } finally {
+                    if (loadingSpinner) {
+                        log('Hiding loading spinner');
+                        loadingSpinner.style.display = 'none';
+                    }
+                }
+            }
+
+            function displayJobs(jobs) {
+                log('Displaying jobs');
+                if (!jobListings || !statusMessage) {
+                    log('Error: Required elements not found');
+                    return;
+                }
+
+                if (!jobs || !jobs.length) {
+                    log('No jobs found');
+                    statusMessage.innerHTML = '<div class="info-message">No jobs found. Try different search terms.</div>';
+                    statusMessage.style.display = 'block';
+                    jobListings.innerHTML = '';
+                    return;
+                }
+
+                log('Rendering job cards');
+                statusMessage.style.display = 'none';
+                const jobsHTML = jobs.map(job => {
+                    // Clean and validate the job link
+                    const jobLink = job.link.startsWith('http') ? job.link : `https://www.linkedin.com${job.link}`;
+                    
+                    return `
+                        <div class="job-card">
+                            <h3>${job.title || 'Untitled Position'}</h3>
+                            <div class="job-details">
+                                <p><strong>Company:</strong> ${job.company || 'Company Name Not Available'}</p>
+                                <p><strong>Location:</strong> ${job.location || 'Location Not Specified'}</p>
+                                <p><strong>Posted:</strong> ${job.posted_date || 'Recently'}</p>
+                            </div>
+                            <div class="job-actions">
+                                <a href="${jobLink}" target="_blank" class="btn secondary" onclick="trackJobClick('${jobLink}')">
+                                    View on LinkedIn
+                                    <span class="external-link-icon">↗</span>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                jobListings.innerHTML = jobsHTML;
+                log('Job display complete');
+            }
+
+            // Track job clicks
+            window.trackJobClick = function(url) {
+                log('Job link clicked:', url);
+                // You could add analytics here in the future
+            }
+
+            // Initial job search
+            log('Performing initial job search');
+            window.searchJobs();
         });
     </script>
 </body>

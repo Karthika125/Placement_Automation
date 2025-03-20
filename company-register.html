@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Registration - Blockchain Placement Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Company Registration</h1>
+        <nav>
+            <ul>
+                <li><a href="landing.html">Home</a></li>
+                <li><a href="company-login.html">Company Login</a></li>
+                <li><a href="company-register.html" class="active">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container fade-in">
+        <section class="register-container">
+            <h2>Create Company Account</h2>
+            <form id="registrationForm">
+                <div class="input-group">
+                    <label for="companyName">Company Name:</label>
+                    <input type="text" id="companyName" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Corporate Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="website">Company Website:</label>
+                    <input type="url" id="website" placeholder="https://..." required>
+                </div>
+
+                <div class="input-group">
+                    <label for="industry">Industry:</label>
+                    <select id="industry" required>
+                        <option value="">Select Industry</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="description">Company Description:</label>
+                    <textarea id="description" rows="4" required></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="location">Company Location:</label>
+                    <input type="text" id="location" required>
+                </div>
+
+                <div class="blockchain-section">
+                    <h3>Blockchain Integration</h3>
+                    <button type="button" id="connectWallet" class="btn secondary">Connect MetaMask</button>
+                    <p id="walletStatus"></p>
+                </div>
+
+                <button type="submit" class="btn primary">Register</button>
+            </form>
+            <p>Already have an account? <a href="company-login.html">Login here</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blockchain Placement Portal</p>
+    </footer>
+
+    <script>
+        // Connect to MetaMask
+        let web3;
+        let userAccount;
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    userAccount = accounts[0];
+                    document.getElementById('walletStatus').innerText = 'Connected: ' + userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+                    document.getElementById('connectWallet').disabled = true;
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById('walletStatus').innerText = 'Connection failed!';
+                }
+            } else {
+                alert('Please install MetaMask to use this feature!');
+            }
+        }
+
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+
+        // Form Submission
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate passwords match
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            // Validate wallet connection
+            if (!userAccount) {
+                alert('Please connect your MetaMask wallet first!');
+                return;
+            }
+
+            const companyData = {
+                companyName: document.getElementById('companyName').value,
+                email: document.getElementById('email').value,
+                website: document.getElementById('website').value,
+                industry: document.getElementById('industry').value,
+                description: document.getElementById('description').value,
+                location: document.getElementById('location').value,
+                walletAddress: userAccount
+            };
+
+            try {
+                // Here you would typically send this data to your backend
+                // For now, we'll just simulate success
+                console.log('Registration data:', companyData);
+                alert('Registration successful! Redirecting to login...');
+                window.location.href = 'company-login.html';
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Registration failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

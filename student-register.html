@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - Blockchain Placement Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Student Registration</h1>
+        <nav>
+            <ul>
+                <li><a href="landing.html">Home</a></li>
+                <li><a href="student-login.html">Student Login</a></li>
+                <li><a href="student-register.html" class="active">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container fade-in">
+        <section class="register-container">
+            <h2>Create Student Account</h2>
+            <form id="registrationForm">
+                <div class="input-group">
+                    <label for="fullName">Full Name:</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="studentId">Student ID:</label>
+                    <input type="text" id="studentId" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="department">Department:</label>
+                    <select id="department" required>
+                        <option value="">Select Department</option>
+                        <option value="CSE">Computer Science</option>
+                        <option value="ECE">Electronics</option>
+                        <option value="ME">Mechanical</option>
+                        <option value="CE">Civil</option>
+                        <option value="EEE">Electrical</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="graduationYear">Expected Graduation Year:</label>
+                    <input type="number" id="graduationYear" min="2024" max="2030" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="skills">Skills (comma-separated):</label>
+                    <input type="text" id="skills" placeholder="e.g., Python, Java, Web Development">
+                </div>
+
+                <div class="blockchain-section">
+                    <h3>Blockchain Integration</h3>
+                    <button type="button" id="connectWallet" class="btn secondary">Connect MetaMask</button>
+                    <p id="walletStatus"></p>
+                </div>
+
+                <button type="submit" class="btn primary">Register</button>
+            </form>
+            <p>Already have an account? <a href="student-login.html">Login here</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blockchain Placement Portal</p>
+    </footer>
+
+    <script>
+        // Connect to MetaMask
+        let web3;
+        let userAccount;
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    userAccount = accounts[0];
+                    document.getElementById('walletStatus').innerText = 'Connected: ' + userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+                    document.getElementById('connectWallet').disabled = true;
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById('walletStatus').innerText = 'Connection failed!';
+                }
+            } else {
+                alert('Please install MetaMask to use this feature!');
+            }
+        }
+
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+
+        // Form Submission
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate passwords match
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            // Validate wallet connection
+            if (!userAccount) {
+                alert('Please connect your MetaMask wallet first!');
+                return;
+            }
+
+            const studentData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                studentId: document.getElementById('studentId').value,
+                department: document.getElementById('department').value,
+                graduationYear: document.getElementById('graduationYear').value,
+                skills: document.getElementById('skills').value.split(',').map(skill => skill.trim()),
+                walletAddress: userAccount
+            };
+
+            try {
+                // Here you would typically send this data to your backend
+                // For now, we'll just simulate success
+                console.log('Registration data:', studentData);
+                alert('Registration successful! Redirecting to login...');
+                window.location.href = 'student-login.html';
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Registration failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
