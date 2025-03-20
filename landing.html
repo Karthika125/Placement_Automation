@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Placement Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <div class="container">
+            <h1>Blockchain Placement Portal</h1>
+            <nav>
+                <ul>
+                    <li><a href="landing.html">Home</a></li>
+                    <li><a href="student-login.html">Student Login</a></li>
+                    <li><a href="company-login.html">Company Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container fade-in">
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Secure & Transparent Hiring Platform</h2>
+                <p>Ensuring a tamper-proof and efficient placement process with blockchain & IPFS technology.</p>
+                <div class="buttons">
+                    <button class="btn primary" id="connectWallet">Connect Wallet</button>
+                    <a href="student-login.html" class="btn secondary">Get Started as Student</a>
+                    <a href="company-login.html" class="btn secondary">Get Started as Company</a>
+                </div>
+                <p id="walletStatus"></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Blockchain Placement Portal</p>
+    </footer>
+
+    <script>
+        // Preloader Functionality
+        window.addEventListener("load", function() {
+            document.getElementById("preloader").style.display = "none";
+            document.querySelector("main").style.display = "block";
+            document.querySelector("main").classList.add("show");
+        });
+
+        // Web3 Wallet Connection
+        document.getElementById("connectWallet").addEventListener("click", async () => {
+            if (typeof window.ethereum !== "undefined") {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    document.getElementById("walletStatus").innerText = "Connected: " + accounts[0];
+                } catch (error) {
+                    document.getElementById("walletStatus").innerText = "Connection Failed!";
+                }
+            } else {
+                alert("MetaMask not found. Please install it.");
+            }
+        });
+    </script>
+</body>
+</html>

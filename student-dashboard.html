@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Blockchain Placement Portal</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/ipfs-http-client/dist/index.min.js"></script>
 </head>
 <body>
     <header>
@@ -20,11 +22,10 @@
 
     <main>
         <section class="upload-section">
-            <h2>Upload Your Resume</h2>
-            <form action="upload.php" method="POST" enctype="multipart/form-data">
-                <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
-                <button type="submit" class="btn">Upload</button>
-            </form>
+            <h2>Upload Your Resume to IPFS</h2>
+            <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" required>
+            <button class="btn" onclick="uploadToIPFS()">Upload</button>
+            <p id="uploadStatus"></p>
         </section>
 
         <section class="companies-section">
@@ -43,7 +44,45 @@
     </footer>
 
     <script>
-        // Simple slider functionality
+        const ipfs = window.IpfsHttpClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
+
+        async function uploadToIPFS() {
+            const fileInput = document.getElementById("resumeUpload");
+            if (!fileInput.files.length) {
+                alert("Please select a file!");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onloadend = async () => {
+                try {
+                    const result = await ipfs.add(reader.result);
+                    const ipfsHash = result.path;
+                    document.getElementById("uploadStatus").innerHTML = `Uploaded: <a href="https://ipfs.io/ipfs/${ipfsHash}" target="_blank">${ipfsHash}</a>`;
+                    saveToBlockchain(ipfsHash);
+                } catch (error) {
+                    console.error("IPFS Upload Error:", error);
+                }
+            };
+        }
+
+        async function saveToBlockchain(ipfsHash) {
+            if (typeof window.ethereum !== "undefined") {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    console.log("Connected Wallet:", accounts[0]);
+                    alert("Resume uploaded and saved to Blockchain!");
+                } catch (error) {
+                    console.error("Blockchain Error:", error);
+                }
+            } else {
+                alert("MetaMask not detected! Install it to connect.");
+            }
+        }
+
+        // Slider animation
         document.addEventListener("DOMContentLoaded", function() {
             const slider = document.querySelector(".company-slider");
             let scrollAmount = 0;

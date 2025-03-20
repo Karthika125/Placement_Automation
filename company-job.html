@@ -6,6 +6,7 @@
     <title>Company Job Listings</title>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 </head>
 <body>
 
@@ -42,13 +43,14 @@
                 <label for="salary">Salary Range:</label>
                 <input type="text" id="salary" required>
 
-                <button type="submit">Post Job</button>
+                <button type="button" onclick="postJob()">Post Job to Blockchain</button>
             </form>
+            <p id="statusMessage"></p>
         </section>
 
         <section>
             <h2>Job Listings</h2>
-            <div id="jobListings"></div>
+            <div id="jobListings">Loading jobs from blockchain...</div>
         </section>
     </main>
 
@@ -57,32 +59,65 @@
     </footer>
 
     <script>
-        document.getElementById("jobForm").addEventListener("submit", function(event) {
-            event.preventDefault();
+        let web3;
+        let contract;
+        const contractAddress = "0xYourSmartContractAddress"; // Replace with your deployed contract address
+        const contractABI = [ /* Paste your contract ABI here */ ]; 
 
-            let jobTitle = document.getElementById("jobTitle").value;
-            let companyName = document.getElementById("companyName").value;
-            let jobDescription = document.getElementById("jobDescription").value;
-            let skillsRequired = document.getElementById("skillsRequired").value;
-            let jobLocation = document.getElementById("jobLocation").value;
-            let salary = document.getElementById("salary").value;
+        async function connectBlockchain() {
+            if (typeof window.ethereum !== "undefined") {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                fetchJobs();
+            } else {
+                alert("MetaMask is required. Please install it.");
+            }
+        }
 
-            let jobHTML = `
-                <div class="job-card">
-                    <h3>${jobTitle}</h3>
-                    <p><strong>Company:</strong> ${companyName}</p>
-                    <p><strong>Description:</strong> ${jobDescription}</p>
-                    <p><strong>Skills:</strong> ${skillsRequired}</p>
-                    <p><strong>Location:</strong> ${jobLocation}</p>
-                    <p><strong>Salary:</strong> ${salary}</p>
-                </div>
-            `;
+        async function postJob() {
+            const accounts = await web3.eth.getAccounts();
+            const jobTitle = document.getElementById("jobTitle").value;
+            const companyName = document.getElementById("companyName").value;
+            const jobDescription = document.getElementById("jobDescription").value;
+            const skillsRequired = document.getElementById("skillsRequired").value;
+            const jobLocation = document.getElementById("jobLocation").value;
+            const salary = document.getElementById("salary").value;
 
-            document.getElementById("jobListings").innerHTML += jobHTML;
+            try {
+                await contract.methods.postJob(
+                    jobTitle, companyName, jobDescription, skillsRequired, jobLocation, salary
+                ).send({ from: accounts[0] });
 
-            // Clear form fields
-            document.getElementById("jobForm").reset();
-        });
+                document.getElementById("statusMessage").innerText = "Job posted successfully!";
+                fetchJobs(); // Refresh the job listings
+            } catch (error) {
+                console.error("Error posting job:", error);
+                document.getElementById("statusMessage").innerText = "Error posting job!";
+            }
+        }
+
+        async function fetchJobs() {
+            const jobs = await contract.methods.getAllJobs().call();
+            const jobListings = document.getElementById("jobListings");
+            jobListings.innerHTML = "";
+
+            jobs.forEach(job => {
+                const jobCard = `
+                    <div class="job-card">
+                        <h3>${job.title}</h3>
+                        <p><strong>Company:</strong> ${job.company}</p>
+                        <p><strong>Description:</strong> ${job.description}</p>
+                        <p><strong>Skills:</strong> ${job.skills}</p>
+                        <p><strong>Location:</strong> ${job.location}</p>
+                        <p><strong>Salary:</strong> ${job.salary}</p>
+                    </div>
+                `;
+                jobListings.innerHTML += jobCard;
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", connectBlockchain);
     </script>
 
 </body>

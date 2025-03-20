@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Dashboard - Blockchain Placement Portal</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 </head>
 <body>
     <header>
@@ -20,8 +21,8 @@
 
     <main>
         <section class="upload-section">
-            <h2>Upload Job Requirements</h2>
-            <form action="upload-job.php" method="POST">
+            <h2>Upload Job Requirements (Blockchain-Based)</h2>
+            <form id="jobForm">
                 <label for="job-title">Job Title:</label>
                 <input type="text" id="job-title" name="job-title" required>
 
@@ -31,17 +32,15 @@
                 <label for="skills">Required Skills:</label>
                 <input type="text" id="skills" name="skills" placeholder="E.g., Python, React, Blockchain" required>
 
-                <button type="submit" class="btn">Post Job</button>
+                <button type="button" class="btn" onclick="postJob()">Post Job on Blockchain</button>
             </form>
+            <p id="statusMessage"></p>
         </section>
 
         <section class="students-section">
             <h2>Matching Candidates</h2>
-            <div class="student-slider">
-                <div class="student-card">Student A - Blockchain Developer</div>
-                <div class="student-card">Student B - AI Engineer</div>
-                <div class="student-card">Student C - Web Developer</div>
-                <div class="student-card">Student D - Data Scientist</div>
+            <div class="student-list">
+                <p>Loading students from blockchain...</p>
             </div>
         </section>
     </main>
@@ -51,18 +50,50 @@
     </footer>
 
     <script>
-        // Auto-scrolling student slider
-        document.addEventListener("DOMContentLoaded", function() {
-            const slider = document.querySelector(".student-slider");
-            let scrollAmount = 0;
-            setInterval(() => {
-                scrollAmount += 200;
-                if (scrollAmount >= slider.scrollWidth - slider.clientWidth) {
-                    scrollAmount = 0;
-                }
-                slider.scrollTo({ left: scrollAmount, behavior: "smooth" });
-            }, 2000);
-        });
+        let web3;
+        let contract;
+        const contractAddress = "0xYourSmartContractAddress"; // Replace with your deployed contract address
+        const contractABI = [ /* Paste your contract ABI here */ ]; 
+
+        async function connectBlockchain() {
+            if (typeof window.ethereum !== "undefined") {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                fetchCandidates();
+            } else {
+                alert("MetaMask is required. Please install it.");
+            }
+        }
+
+        async function postJob() {
+            const accounts = await web3.eth.getAccounts();
+            const title = document.getElementById("job-title").value;
+            const description = document.getElementById("job-description").value;
+            const skills = document.getElementById("skills").value;
+
+            try {
+                await contract.methods.postJob(title, description, skills).send({ from: accounts[0] });
+                document.getElementById("statusMessage").innerText = "Job posted successfully!";
+            } catch (error) {
+                console.error("Error posting job:", error);
+                document.getElementById("statusMessage").innerText = "Error posting job!";
+            }
+        }
+
+        async function fetchCandidates() {
+            const students = await contract.methods.getMatchingStudents().call();
+            const studentList = document.querySelector(".student-list");
+            studentList.innerHTML = "";
+            students.forEach(student => {
+                const studentDiv = document.createElement("div");
+                studentDiv.classList.add("student-card");
+                studentDiv.innerText = `${student.name} - ${student.skills.join(", ")}`;
+                studentList.appendChild(studentDiv);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", connectBlockchain);
     </script>
 </body>
 </html>

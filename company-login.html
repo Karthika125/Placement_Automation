@@ -7,26 +7,37 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+
     <header>
         <h1>Company Login</h1>
         <nav>
             <ul>
                 <li><a href="landing.html">Home</a></li>
                 <li><a href="student-login.html">Student Login</a></li>
-                <li><a href="company-login.html">Company Login</a></li>
+                <li><a href="company-login.html" class="active">Company Login</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <main class="container fade-in">
         <section class="login-container">
             <h2>Login as Company</h2>
             <form action="company-dashboard.html" method="POST">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+                
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
 
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
 
                 <button type="submit" class="btn">Login</button>
             </form>
@@ -37,5 +48,12 @@
     <footer>
         <p>&copy; 2025 Blockchain Placement Portal</p>
     </footer>
+
+    <script>
+        // Preloader Fade Out
+        window.addEventListener("load", function () {
+            document.getElementById("preloader").style.display = "none";
+        });
+    </script>
 </body>
 </html>
